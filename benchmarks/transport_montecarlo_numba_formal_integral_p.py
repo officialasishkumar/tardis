@@ -12,7 +12,8 @@ from tardis import run_tardis
 from tardis.io.configuration.config_reader import Configuration
 from tardis.model.geometry.radial1d import NumbaRadial1DGeometry
 
-
+# Error in all functions: Terminating: fork() called from a process already using GNU OpenMP, this is unsafe. 
+@skip_benchmark
 class BenchmarkMontecarloMontecarloNumbaNumbaFormalIntegral(BenchmarkBase):
     """
     Class to benchmark the numba formal integral function.
@@ -106,6 +107,8 @@ class BenchmarkMontecarloMontecarloNumbaNumbaFormalIntegral(BenchmarkBase):
         # time taken for a photon to move 1 cm
         return 1 / c.c.cgs.value
 
+    # Error: Terminating: fork() called from a process already using GNU OpenMP, this is unsafe.
+    @skip_benchmark
     @parameterize({"p": [0.0, 0.5, 1.0], "Test data": TESTDATA})
     def time_calculate_z(self, p, test_data):
         func = formal_integral.calculate_z
@@ -159,6 +162,8 @@ class BenchmarkMontecarloMontecarloNumbaNumbaFormalIntegral(BenchmarkBase):
             oshell_id,
         )
 
+    # Error: Terminating: fork() called from a process already using GNU OpenMP, this is unsafe.
+    @skip_benchmark
     @parameterize(
         {
             "Parameters": [
@@ -174,6 +179,8 @@ class BenchmarkMontecarloMontecarloNumbaNumbaFormalIntegral(BenchmarkBase):
 
     # Benchmark for functions in FormalIntegrator class
 
+    # Error: Terminating: fork() called from a process already using GNU OpenMP, this is unsafe.
+    @skip_benchmark  
     def time_FormalIntegrator_functions(self):
         self.FormalIntegrator.calculate_spectrum(
             self.Simulation.transport.transport_state.spectrum.frequency
@@ -181,6 +188,6 @@ class BenchmarkMontecarloMontecarloNumbaNumbaFormalIntegral(BenchmarkBase):
         self.FormalIntegrator.make_source_function()
         self.FormalIntegrator.generate_numba_objects()
         self.FormalIntegrator.formal_integral(
-            self.Simulation.transport.transport_state.spectrum.frequency, 
+            self.Simulation.transport.transport_state.spectrum.frequency,
             1000
         )
