@@ -123,10 +123,10 @@ jobs:
         run: asv run --config asv.conf.json
 
       - name: Compare Master and PR head
-        run: asv compare upstream/master HEAD --config asv.conf.json | tee asv-compare-output.log
+        run: asv compare ${{ github.event_name.pull_request.head.sha }} ${{ github.event_name.pull_request.base.sha }} --config asv.conf.json | tee asv-compare-output.log
 
       - name: Compare Master and PR head but only show changed results
-        run: asv compare upstream/master HEAD --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
+        run: asv compare ${{ github.event_name.pull_request.head.sha }} ${{ github.event_name.pull_request.base.sha }} --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
 
       - name: Benchmarks compare output
         id: asv_pr_vs_master
@@ -169,11 +169,9 @@ jobs:
         if: github.event_name == 'pull_request_target'
         continue-on-error: true
         uses: cpina/github-action-push-to-another-repository@main 
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.BOT_TOKEN }}
         with:
           source-directory: PR-${{ github.event.number }}
-          destination-github-username: tardis-sn
+          destination-github-username: officialasishkumar
           destination-repository-name: tardis-benchmarks
           user-email: tardis.sn.bot@gmail.com
           target-branch: main
