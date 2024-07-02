@@ -160,24 +160,32 @@ jobs:
       - name: Delete env files of PR
         if: github.event_name == 'pull_request_target'
         run: rm -r .asv/env
-      
+
       - name: Move .asv to PR folder
         if: github.event_name == 'pull_request_target'
         run: mv .asv PR-${{ github.event.number }}
+
+      - name: Create branch for every PR  
+        uses: peterjgrainger/action-create-branch@v2.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: "PR-${{ github.event.number}}"
 
       - name: Push results of PR to results repository
         if: github.event_name == 'pull_request_target'
         continue-on-error: true
         uses: cpina/github-action-push-to-another-repository@main 
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source-directory: PR-${{ github.event.number }}
+          source-directory: .asv
           destination-github-username: officialasishkumar
           destination-repository-name: tardis-benchmarks
           user-email: tardis.sn.bot@gmail.com
-          target-branch: main
-          target-directory: PR
+          target-branch: PR-${{ github.event.number}}
+          target-directory: .asv
 
-      
       - name: Find Comment
         if: always() && github.event_name == 'pull_request_target'
         uses: peter-evans/find-comment@v1
