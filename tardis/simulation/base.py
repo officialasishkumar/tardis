@@ -15,11 +15,9 @@ from tardis.io.configuration.config_reader import ConfigurationError
 from tardis.io.util import HDFWriterMixin
 from tardis.model import SimulationState
 from tardis.model.parse_input import initialize_packet_source
-from tardis.montecarlo import (
-    montecarlo_configuration as montecarlo_configuration,
-)
-from tardis.montecarlo.base import MonteCarloTransportSolver
+from tardis.transport.montecarlo.base import MonteCarloTransportSolver
 from tardis.plasma.standard_plasmas import assemble_plasma
+from tardis.simulation.convergence import ConvergenceSolver
 from tardis.util.base import is_notebook
 from tardis.visualization import ConvergencePlots
 
@@ -98,7 +96,7 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
     iterations : int
     model : tardis.model.SimulationState
     plasma : tardis.plasma.BasePlasma
-    transport : tardis.montecarlo.MontecarloTransport
+    transport : tardis.transport.montecarlo.MontecarloTransport
     no_of_packets : int
     last_no_of_packets : int
     no_of_virtual_packets : int
@@ -155,44 +153,51 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
         self.show_progress_bars = show_progress_bars
         self.version = tardis.__version__
 
-        if convergence_strategy.type in ("damped"):
-            self.convergence_strategy = convergence_strategy
-            self.converged = False
-            self.consecutive_converges_count = 0
-        elif convergence_strategy.type in ("custom"):
-            raise NotImplementedError(
-                "Convergence strategy type is custom; "
-                "you need to implement your specific treatment!"
-            )
-        else:
-            raise ValueError(
-                f"Convergence strategy type is "
-                f"not damped or custom "
-                f"- input is {convergence_strategy.type}"
-            )
+        # Convergence
+        self.convergence_strategy = convergence_strategy
+        self.converged = False
+        self.consecutive_converges_count = 0
+
+        # Convergence solvers
+        self.t_rad_convergence_solver = ConvergenceSolver(
+            self.convergence_strategy.t_rad
+        )
+        self.w_convergence_solver = ConvergenceSolver(
+            self.convergence_strategy.w
+        )
+        self.t_inner_convergence_solver = ConvergenceSolver(
+            self.convergence_strategy.t_inner
+        )
 
         if show_convergence_plots:
-            self.convergence_plots = ConvergencePlots(
-                iterations=self.iterations, **convergence_plots_kwargs
-            )
-
-            if "export_convergence_plots" in convergence_plots_kwargs:
-                if not isinstance(
-                    convergence_plots_kwargs["export_convergence_plots"], bool
-                ):
-                    raise TypeError(
-                        "Expected bool in export_convergence_plots argument"
-                    )
-                self.export_convergence_plots = convergence_plots_kwargs[
-                    "export_convergence_plots"
-                ]
+            if not is_notebook():
+                raise RuntimeError(
+                    "Convergence Plots cannot be displayed in command-line. Set show_convergence_plots "
+                    "to False."
+                )
             else:
-                self.export_convergence_plots = False
+                self.convergence_plots = ConvergencePlots(
+                    iterations=self.iterations, **convergence_plots_kwargs
+                )
+
+        if "export_convergence_plots" in convergence_plots_kwargs:
+            if not isinstance(
+                convergence_plots_kwargs["export_convergence_plots"],
+                bool,
+            ):
+                raise TypeError(
+                    "Expected bool in export_convergence_plots argument"
+                )
+            self.export_convergence_plots = convergence_plots_kwargs[
+                "export_convergence_plots"
+            ]
+        else:
+            self.export_convergence_plots = False
 
         self._callbacks = OrderedDict()
         self._cb_next_id = 0
 
-        montecarlo_configuration.CONTINUUM_PROCESSES_ENABLED = (
+        self.transport.montecarlo_configuration.CONTINUUM_PROCESSES_ENABLED = (
             not self.plasma.continuum_interaction_species.empty
         )
 
@@ -211,48 +216,25 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
 
         return input_t_inner * luminosity_ratios**t_inner_update_exponent
 
-    @staticmethod
-    def damped_converge(value, estimated_value, damping_factor):
-        # FIXME: Should convergence strategy have its own class containing this
-        # as a method
-        return value + damping_factor * (estimated_value - value)
-
     def _get_convergence_status(
         self, t_rad, w, t_inner, estimated_t_rad, estimated_w, estimated_t_inner
     ):
-        # FIXME: Move the convergence checking in its own class.
-        no_of_shells = self.simulation_state.no_of_shells
-
-        convergence_t_rad = (
-            abs(t_rad - estimated_t_rad) / estimated_t_rad
-        ).value
-        convergence_w = abs(w - estimated_w) / estimated_w
-        convergence_t_inner = (
-            abs(t_inner - estimated_t_inner) / estimated_t_inner
-        ).value
-
-        fraction_t_rad_converged = (
-            np.count_nonzero(
-                convergence_t_rad < self.convergence_strategy.t_rad.threshold
-            )
-            / no_of_shells
+        t_rad_converged = self.t_rad_convergence_solver.get_convergence_status(
+            t_rad.value,
+            estimated_t_rad.value,
+            self.simulation_state.no_of_shells,
         )
 
-        t_rad_converged = (
-            fraction_t_rad_converged > self.convergence_strategy.fraction
+        w_converged = self.w_convergence_solver.get_convergence_status(
+            w, estimated_w, self.simulation_state.no_of_shells
         )
-
-        fraction_w_converged = (
-            np.count_nonzero(
-                convergence_w < self.convergence_strategy.w.threshold
-            )
-            / no_of_shells
-        )
-
-        w_converged = fraction_w_converged > self.convergence_strategy.fraction
 
         t_inner_converged = (
-            convergence_t_inner < self.convergence_strategy.t_inner.threshold
+            self.t_inner_convergence_solver.get_convergence_status(
+                t_inner.value,
+                estimated_t_inner.value,
+                1,
+            )
         )
 
         if np.all([t_rad_converged, w_converged, t_inner_converged]):
@@ -300,24 +282,20 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
         )
 
         # calculate_next_plasma_state equivalent
-        # FIXME: Should convergence strategy have its own class?
-        next_t_radiative = self.damped_converge(
+        next_t_radiative = self.t_rad_convergence_solver.converge(
             self.simulation_state.t_radiative,
             estimated_t_rad,
-            self.convergence_strategy.t_rad.damping_constant,
         )
-        next_dilution_factor = self.damped_converge(
+        next_dilution_factor = self.w_convergence_solver.converge(
             self.simulation_state.dilution_factor,
             estimated_dilution_factor,
-            self.convergence_strategy.w.damping_constant,
         )
         if (
             self.iterations_executed + 1
         ) % self.convergence_strategy.lock_t_inner_cycles == 0:
-            next_t_inner = self.damped_converge(
+            next_t_inner = self.t_inner_convergence_solver.converge(
                 self.simulation_state.t_inner,
                 estimated_t_inner,
-                self.convergence_strategy.t_inner.damping_constant,
             )
         else:
             next_t_inner = self.simulation_state.t_inner
@@ -633,8 +611,9 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
         config,
         packet_source=None,
         virtual_packet_logging=False,
-        show_convergence_plots=True,
+        show_convergence_plots=False,
         show_progress_bars=True,
+        legacy_mode_enabled=False,
         **kwargs,
     ):
         """
@@ -660,7 +639,7 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
         if atom_data is None:
             if "atom_data" in config:
                 if Path(config.atom_data).is_absolute():
-                    atom_data_fname = config.atom_data
+                    atom_data_fname = Path(config.atom_data)
                 else:
                     atom_data_fname = (
                         Path(config.config_dirname) / config.atom_data
@@ -688,15 +667,22 @@ class Simulation(PlasmaStateStorerMixin, HDFWriterMixin):
         else:
             if hasattr(config, "csvy_model"):
                 simulation_state = SimulationState.from_csvy(
-                    config, atom_data=atom_data
+                    config,
+                    atom_data=atom_data,
+                    legacy_mode_enabled=legacy_mode_enabled,
                 )
             else:
                 simulation_state = SimulationState.from_config(
-                    config, atom_data=atom_data
+                    config,
+                    atom_data=atom_data,
+                    legacy_mode_enabled=legacy_mode_enabled,
                 )
             if packet_source is not None:
                 simulation_state.packet_source = initialize_packet_source(
-                    config, simulation_state.geometry, packet_source
+                    config,
+                    simulation_state.geometry,
+                    packet_source,
+                    legacy_mode_enabled,
                 )
         if "plasma" in kwargs:
             plasma = kwargs["plasma"]
