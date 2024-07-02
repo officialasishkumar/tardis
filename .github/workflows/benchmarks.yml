@@ -115,8 +115,6 @@ jobs:
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
           destination_dir: .asv
-          keep_files: true
-          force_orphan: true
           external_repository: officialasishkumar/tardis-benchmarks
 
       - name: Run benchmarks
@@ -163,6 +161,7 @@ jobs:
         run: rm -r .asv/env
 
       - name: Set destination directory
+        if: github.event_name == 'pull_request_target'
         run: |
           BRANCH=$(echo ${GITHUB_REF#refs/heads/})
           if [[ $EVENT == push ]] || [[ $EVENT == workflow_dispatch ]]; then
@@ -189,6 +188,7 @@ jobs:
           PR: ${{ github.event.number }}
 
       - name: Set clean branch option
+        if: github.event_name == 'pull_request_target'
         run: |
           if [[ $EVENT == workflow_dispatch ]]; then
             echo "CLEAN_BRANCH=true" >> $GITHUB_ENV
@@ -203,6 +203,7 @@ jobs:
           EVENT: ${{ github.event_name }}
 
       - name: Deploy ${{ env.DEST_DIR }}
+        if: github.event_name == 'pull_request_target'
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
