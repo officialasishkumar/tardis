@@ -209,7 +209,6 @@ jobs:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
-          destination_dir: ${{ env.DEST_DIR }}
           keep_files: true
           force_orphan: ${{ env.CLEAN_BRANCH }}
           external_repository: officialasishkumar/tardis-benchmarks
