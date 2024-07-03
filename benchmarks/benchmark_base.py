@@ -64,7 +64,7 @@ class BenchmarkBase:
         # TODO: This route is fixed but needs to get from the arguments given in the command line.
         #       /app/tardis-refdata
         ref_data_path = Path(
-            Path(__file__).parent.parent,
+            Path(__file__).parent,
             "tardis-regression-data",
             ".git",
             "lfs"
