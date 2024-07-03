@@ -65,7 +65,9 @@ class BenchmarkBase:
         #       /app/tardis-refdata
         ref_data_path = Path(
             Path(__file__).parent.parent,
-            "tardis-refdata",
+            "tardis-regression-data",
+            ".git",
+            "lfs"
         ).resolve()
         return ref_data_path
 

@@ -46,10 +46,10 @@ jobs:
       - name: Setup LFS
         uses: ./.github/actions/setup_lfs
 
-      - name: Copy atom data to refdata
-        run: |
-          mkdir -p tardis-refdata/atom_data
-          cp kurucz_cd23_chianti_H_He.h5 tardis-refdata/atom_data/
+      # - name: Copy atom data to refdata
+      #   run: |
+      #     mkdir -p tardis-refdata/atom_data
+      #     cp kurucz_cd23_chianti_H_He.h5 tardis-refdata/atom_data/
 
       - name: Setup Mamba
         uses: mamba-org/setup-micromamba@v1
