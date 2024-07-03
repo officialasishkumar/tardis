@@ -57,7 +57,7 @@ jobs:
             asv
             mamba
 
-      - run: git fetch origin master
+      # - run: git fetch origin master
 
       - name: Install asv
         run: pip install asv
@@ -91,7 +91,7 @@ jobs:
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
           keep_files: true
-          external_repository: tardis-sn/tardis-benchmarks
+          external_repository: officialasishkumar/tardis-benchmarks
 
       - name: Run benchmarks
         if: github.event_name == 'pull_request_target'
@@ -188,7 +188,7 @@ jobs:
           destination_dir: ${{ env.DEST_DIR }}
           keep_files: true
           force_orphan: ${{ env.CLEAN_BRANCH }}
-          external_repository: tardis-sn/tardis-benchmarks
+          external_repository: officialasishkumar/tardis-benchmarks
   
       - name: Find Comment
         if: always() && github.event_name == 'pull_request_target'
