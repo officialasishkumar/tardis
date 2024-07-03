@@ -65,8 +65,8 @@ jobs:
       - name: Install asv
         run: pip install asv
 
-      - run: git remote add upstream https://github.com/officialasishkumar/tardis
-      - run: git fetch upstream master
+      # - run: git remote add upstream https://github.com/officialasishkumar/tardis
+      # - run: git fetch upstream master
 
       - name: Accept all asv questions
         run: asv machine --yes
