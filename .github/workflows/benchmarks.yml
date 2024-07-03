@@ -57,6 +57,8 @@ jobs:
             asv
             mamba
 
+      - run: git fetch upstream master
+
       - name: Install asv
         run: pip install asv
 
