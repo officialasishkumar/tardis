@@ -96,7 +96,6 @@ jobs:
           personal_token: ${{ secrets.API_TOKEN_GITHUB }}
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
-          destination_dir: .asv
           external_repository: officialasishkumar/tardis-benchmarks
 
       - name: Run benchmarks
