@@ -123,6 +123,9 @@ jobs:
       - name: Run benchmarks for base to head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
+          echo $(git rev-parse HEAD)
+          echo $(git merge-base HEAD upstream/master)
+          
           echo $(git rev-parse HEAD) > commit_hashes.txt
           echo $(git merge-base HEAD upstream/master) >> commit_hashes.txt
 
