@@ -73,6 +73,9 @@ def single_packet_loop(
         montecarlo_configuration.ENABLE_FULL_RELATIVITY,
     )
 
+    for i in range(10000):
+        print("hello")
+
     trace_vpacket_volley(
         r_packet,
         vpacket_collection,
