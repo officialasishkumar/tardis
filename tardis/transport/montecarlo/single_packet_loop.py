@@ -29,6 +29,7 @@ from tardis.transport.montecarlo.r_packet_transport import (
     trace_packet,
 )
 from tardis.transport.montecarlo.vpacket import trace_vpacket_volley
+import time
 
 C_SPEED_OF_LIGHT = const.c.to("cm/s").value
 
@@ -63,6 +64,8 @@ def single_packet_loop(
     """
     line_interaction_type = montecarlo_configuration.LINE_INTERACTION_TYPE
 
+    time.sleep(1)
+
     if montecarlo_configuration.ENABLE_FULL_RELATIVITY:
         set_packet_props_full_relativity(r_packet, time_explosion)
     else:
@@ -75,6 +78,7 @@ def single_packet_loop(
 
     for i in range(10000):
         print("hello")
+
 
     trace_vpacket_volley(
         r_packet,
