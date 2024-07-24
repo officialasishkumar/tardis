@@ -13,6 +13,8 @@ class BenchmarkMontecarloMontecarloNumbaVpacket(BenchmarkBase):
     """
 
     def time_single_packet_loop(self):
+        for _ in range(25):
+            print("messi better")
         single_packet_loop.single_packet_loop(
             self.packet,
             self.verysimple_numba_radial_1d_geometry,
