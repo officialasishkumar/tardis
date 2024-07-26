@@ -29,11 +29,6 @@ defaults:
 
 jobs:
   build:
-    if: github.repository_owner == 'tardis-sn' &&
-      (github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request_target' &&
-      contains(github.event.pull_request.labels.*.name, 'benchmarks')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -98,23 +93,28 @@ jobs:
           user_name: "TARDIS Bot"
           user_email: "tardis.sn.bot@gmail.com"
 
+      - name: Get upstream Branch
+        run: |
+          git submodule add https://github.com/officialasishkumar/tardis.git
+          git remote add upstream 
+
       - name: Run benchmarks for base and head commits of PR
         if: github.event_name == 'pull_request_target'
         run: |
-          echo ${{ github.event.pull_request.base.sha }} > commit_hashes.txt
-          echo ${{ github.event.pull_request.head.sha }} >> commit_hashes.txt
+          echo $(git rev-parse HEAD) > commit_hashes.txt
+          echo $(git merge-base HEAD upstream/master) >> commit_hashes.txt
 
-          asv run -a repeat=2 -a rounds=1 HASHFILE:commit_hashes.txt | tee asv-output-PR.log  
+          asv run -a repeat=2 -a rounds=1 HASHFILE:commit_hashes.txt --bench single_packet_loop | tee asv-output-PR.log  
             if grep -q failed asv-output-PR.log; then 
               echo "Some benchmarks have failed!"
               exit 1
             fi
 
       - name: Compare Master and PR head
-        run: asv compare ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} --config asv.conf.json | tee asv-compare-output.log
+        run: asv compare upstream/master HEAD --config asv.conf.json | tee asv-compare-output.log
 
       - name: Compare Master and PR head but only show changed results
-        run: asv compare ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
+        run: asv compare upstream/master HEAD --only-changed --config asv.conf.json | tee asv-compare-changed-output.log
 
       - name: Benchmarks compare output
         id: asv_pr_vs_master
@@ -183,13 +183,13 @@ jobs:
         if: github.event_name == 'pull_request_target'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.BOT_TOKEN }}
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
           destination_dir: ${{ env.DEST_DIR }}
           keep_files: true
           force_orphan: ${{ env.CLEAN_BRANCH }}
-          external_repository: tardis-sn/tardis-benchmarks
+          external_repository: officialasishkumar/tardis-benchmarks
           user_name: "TARDIS Bot"
           user_email: "tardis.sn.bot@gmail.com"
       
