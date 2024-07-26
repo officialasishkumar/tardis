@@ -36,11 +36,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout pull/${{ github.event.number }}
+      - name: Checkout PR and master branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+        if: github.event_name == 'pull_request_target'
+
+      - name: fetch master branch
+        run: git fetch origin master:master
         if: github.event_name == 'pull_request_target'
 
       - name: Setup LFS
@@ -97,7 +101,7 @@ jobs:
         if: github.event_name == 'pull_request_target'
         run: |
           echo $(git rev-parse HEAD) > commit_hashes.txt
-          echo $(git merge-base HEAD origin/master) >> commit_hashes.txt
+          echo $(git rev-parse master) >> commit_hashes.txt
 
           asv run -a repeat=2 -a rounds=1 HASHFILE:commit_hashes.txt --bench single_packet_loop | tee asv-output-PR.log  
             if grep -q failed asv-output-PR.log; then 
