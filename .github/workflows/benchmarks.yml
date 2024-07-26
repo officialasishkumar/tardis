@@ -99,7 +99,7 @@ jobs:
           echo $(git rev-parse HEAD) > commit_hashes.txt
           echo $(git merge-base HEAD origin/master) >> commit_hashes.txt
 
-          asv run -a repeat=2 -a rounds=1 --bench HASHFILE:commit_hashes.txt single_packet_loop | tee asv-output-PR.log  
+          asv run -a repeat=2 -a rounds=1 HASHFILE:commit_hashes.txt --bench single_packet_loop | tee asv-output-PR.log  
             if grep -q failed asv-output-PR.log; then 
               echo "Some benchmarks have failed!"
               exit 1
