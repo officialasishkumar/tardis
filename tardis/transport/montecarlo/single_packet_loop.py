@@ -63,6 +63,9 @@ def single_packet_loop(
     """
     line_interaction_type = montecarlo_configuration.LINE_INTERACTION_TYPE
 
+    for _ in range(25):
+        print("hello")
+
     if montecarlo_configuration.ENABLE_FULL_RELATIVITY:
         set_packet_props_full_relativity(r_packet, time_explosion)
     else:
