@@ -95,8 +95,8 @@ jobs:
 
       - name: Get upstream Branch
         run: |
-          git submodule add https://github.com/officialasishkumar/tardis.git
-          git remote add upstream 
+          git remote add upstream https://github.com/officialasishkumar/sympy.git
+          git fetch upstream master
 
       - name: Run benchmarks for base and head commits of PR
         if: github.event_name == 'pull_request_target'
