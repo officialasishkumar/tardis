@@ -76,7 +76,7 @@ jobs:
         if: github.event_name != 'pull_request_target'
         run: |
           git log -n 4  --pretty=format:"%H" >> tag_commits.txt
-          asv run -a repeat=1 -a rounds=1 HASHFILE:tag_commits.txt | tee asv-output.log  
+          asv run HASHFILE:tag_commits.txt | tee asv-output.log  
           if grep -q failed asv-output.log; then 
             echo "Some benchmarks have failed!"
             exit 1
@@ -94,13 +94,11 @@ jobs:
         if: github.event_name != 'pull_request_target'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          personal_token: ${{ secrets.BOT_TOKEN }}
+          personal_token: ${{ secrets.API_TOKEN_GITHUB }}
           publish_branch: ${{ env.DEPLOY_BRANCH }}
           publish_dir: .asv/html
           keep_files: true
-          external_repository: tardis-sn/tardis-benchmarks
-          user_name: "TARDIS Bot"
-          user_email: "tardis.sn.bot@gmail.com"
+          external_repository: officialasishkumar/tardis-benchmarks
 
       - name: Run benchmarks for base and head commits of PR
         if: github.event_name == 'pull_request_target'
