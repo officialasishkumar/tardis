@@ -2,42 +2,43 @@
 Basic TARDIS Benchmark.
 """
 
-import functools
-
+from asv_runner.benchmarks.mark import parameterize
 from numba import config
-
 
 import tardis.spectrum.formal_integral as formal_integral
 from benchmarks.benchmark_base import BenchmarkBase
 
-config.THREADING_LAYER = "workqueue"
-
+config.THREADING_LAYER='workqueue'
 
 class BenchmarkTransportMontecarloFormalIntegral(BenchmarkBase):
     """
     Class to benchmark the numba formal integral function.
     """
 
-    @functools.cache
-    def setup(self):
-        self.sim = self.simulation_verysimple
-        self.FormalIntegrator = formal_integral.FormalIntegrator(
-            self.sim.simulation_state, self.sim.plasma, self.sim.transport
-        )
-
-    # Bencmark for intensity black body function
-    def time_intensity_black_body(self):
-        nu = 1e14
-        temperature = 1e4
+    @parameterize(
+        {
+            "Parameters": [
+                {
+                    "nu": 1e14,
+                    "temperature": 1e4,
+                }
+            ]
+        }
+    )
+    def time_intensity_black_body(self, parameters):
+        nu = parameters["nu"]
+        temperature = parameters["temperature"]
         formal_integral.intensity_black_body(nu, temperature)
 
     # Benchmark for functions in FormalIntegrator class
     def time_FormalIntegrator_functions(self):
-        self.FormalIntegrator.calculate_spectrum(
-            self.sim.spectrum_solver.spectrum_real_packets.frequency
+        FormalIntegrator = formal_integral.FormalIntegrator(
+            self.simulation_verysimple.simulation_state, self.simulation_verysimple.plasma, self.simulation_verysimple.transport
         )
-        self.FormalIntegrator.make_source_function()
-        self.FormalIntegrator.generate_numba_objects()
-        self.FormalIntegrator.formal_integral(
-            self.sim.spectrum_solver.spectrum_real_packets.frequency, 1000
+        FormalIntegrator.calculate_spectrum(self.simulation_verysimple.spectrum_solver.spectrum_real_packets.frequency)
+        FormalIntegrator.make_source_function()
+        FormalIntegrator.generate_numba_objects()
+        FormalIntegrator.formal_integral(
+            self.simulation_verysimple.spectrum_solver.spectrum_real_packets.frequency,
+            1000
         )
