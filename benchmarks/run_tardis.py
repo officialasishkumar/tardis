@@ -6,8 +6,6 @@ from benchmarks.benchmark_base import BenchmarkBase
 from tardis import run_tardis
 from tardis.io.atom_data import AtomData
 
-
-
 class BenchmarkRunTardis(BenchmarkBase):
     """
     Class to benchmark the `run tardis` function.
