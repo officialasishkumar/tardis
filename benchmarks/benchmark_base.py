@@ -80,7 +80,7 @@ class BenchmarkBase:
     @property
     def atomic_data_fname(self):
         atomic_data_fname = (
-            f"{self.tardis_ref_path}/atom_data/kurucz_cd23_chianti_H_He.h5"
+            f"{self.tardis_ref_path}/kurucz_cd23_chianti_H_He.h5"
         )
 
         if not Path(atomic_data_fname).exists():
