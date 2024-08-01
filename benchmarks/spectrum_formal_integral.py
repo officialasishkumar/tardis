@@ -11,7 +11,6 @@ from tardis.spectrum import formal_integral
 
 config.THREADING_LAYER = "workqueue"
 
-
 class BenchmarkTransportMontecarloFormalIntegral(BenchmarkBase):
     """
     Class to benchmark the numba formal integral function.
