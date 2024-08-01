@@ -62,8 +62,7 @@ class BenchmarkBase:
     @property
     def tardis_ref_path(self):
         ref_data_path = Path(
-            Path(__file__).parent.parent,
-            "tardis-refdata"
+            Path(__file__).parent.parent, "tardis-refdata"
         ).resolve()
         return ref_data_path
 
@@ -80,7 +79,7 @@ class BenchmarkBase:
     @property
     def atomic_data_fname(self):
         atomic_data_fname = (
-            f"{self.tardis_ref_path}/atom_data/kurucz_cd23_chianti_H_He.h5"
+            f"{self.tardis_ref_path}/atom_data/kurucz_cd23_chianti_H_He.h5" 
         )
 
         if not Path(atomic_data_fname).exists():
