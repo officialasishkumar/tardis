@@ -8,10 +8,19 @@ import tardis.transport.montecarlo.interaction as interaction
 from benchmarks.benchmark_base import BenchmarkBase
 
 
+# check it
 class BenchmarkTransportMontecarloInteraction(BenchmarkBase):
     """
     Class to benchmark the numba interaction function.
     """
+    
+    repeat = 3
+
+    def setup(self):
+        self.Packet = self.packet
+        self.time_explosion = self.verysimple_time_explosion
+        self.enable_full_relativity = self.verysimple_enable_full_relativity
+        self.opacity_state = self.verysimple_opacity_state
 
     repeat = 3 
 
