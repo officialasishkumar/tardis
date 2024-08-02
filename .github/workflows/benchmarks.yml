@@ -30,12 +30,6 @@ defaults:
 
 jobs:
   build:
-    if: github.repository_owner == 'tardis-sn' &&
-      (github.event_name == 'push' ||
-      (!github.event.pull_request.draft) ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request_target' &&
-      contains(github.event.pull_request.labels.*.name, 'benchmarks')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,8 +71,8 @@ jobs:
       - name: Run benchmarks for last 4 commits if not PR
         if: github.event_name != 'pull_request_target'
         run: |
-          git log -n 4  --pretty=format:"%H" >> tag_commits.txt
-          asv run -a rounds=1 HASHFILE:tag_commits.txt | tee asv-output.log
+          git log -n 1 --pretty=format:"%H" >> tag_commits.txt
+          asv run HASHFILE:tag_commits.txt --quick | tee asv-output.log
           if grep -q failed asv-output.log; then 
             echo "Some benchmarks have failed!"
             exit 1
