@@ -8,14 +8,14 @@ import tardis.transport.montecarlo.interaction as interaction
 from benchmarks.benchmark_base import BenchmarkBase
 
 
+# check it
 class BenchmarkTransportMontecarloInteraction(BenchmarkBase):
     """
     Class to benchmark the numba interaction function.
     """
+    
+    repeat = 3
 
-    repeat = 3 
-
-    @functools.cache
     def setup(self):
         self.Packet = self.packet
         self.time_explosion = self.verysimple_time_explosion

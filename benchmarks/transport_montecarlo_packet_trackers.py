@@ -26,7 +26,6 @@ class BenchmarkTransportMontecarloPacketTrackers(BenchmarkBase):
         packet_trackers.rpacket_trackers_to_dataframe(
             self.TransportState.rpacket_tracker
         )
-
     def time_generate_rpacket_tracker_list(self, num_packets, length):
         packet_trackers.generate_rpacket_tracker_list(num_packets, length)
 
