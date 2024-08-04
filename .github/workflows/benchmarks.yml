@@ -77,7 +77,7 @@ jobs:
       - name: Run benchmarks for last 4 commits if not PR
         if: github.event_name != 'pull_request_target'
         run: |
-          git log -n 4  --pretty=format:"%H" >> tag_commits.txt
+          git log -n 10  --pretty=format:"%H" >> tag_commits.txt
           asv run HASHFILE:tag_commits.txt --bench transport_montecarlo_single_packet_loop --quick -e | tee asv-output.log
           if grep -q failed asv-output.log; then 
             echo "Some benchmarks have failed!"
