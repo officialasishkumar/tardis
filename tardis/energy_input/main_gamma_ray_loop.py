@@ -283,6 +283,6 @@ def run_gamma_ray_loop(
         energy_plot_df,
         escape_energy,
         decayed_packet_count,
-        energy_plot_positrons,
+        energy_plot_positrons,   
         energy_estimated_deposition,
     )
