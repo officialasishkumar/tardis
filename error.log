@@ -1,0 +1,35 @@
+· Creating environments
+· Discovering benchmarks
+· Running 6 total benchmarks (1 commits * 1 environments * 6 benchmarks)
+[ 0.00%] · For tardis commit 2d775dcd <release-2025.03.09~2>:
+[ 0.00%] ·· Benchmarking mamba-py3.12-TARDIS_REF_PATHtardis-regression-data_atom_data
+[ 0.00%] ··· Importing benchmark suite produced output:
+[ 0.00%] ···· 
+              Iterations:                                                                                0/? [00:00<?, ?it/s]
+              
+[ 8.33%] ··· ...se.BenchmarkPlasmaAssemblyBase.time_assemble            2.35±0s
+[ 8.33%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
+[16.67%] ··· ...rkPlasmaAssemblyBase.time_initialize_j_blues           56.3±0ms
+[16.67%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
+[25.00%] ··· ...hmarkPlasmaAssemblyBase.time_prepare_factory            25.3±0s
+[25.00%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
+              Number of density points larger than number of shells. Assuming inner point irrelevant
+              /home/charon/coding/open-source/tardis/.asv/env/804f3a98b472dfec2c03571a30c1d9a2/lib/python3.12/site-packages/tardis/transport/montecarlo/montecarlo_main_loop.py:123: NumbaTypeSafetyWarning:
+              
+              [1m[1m[1munsafe cast from uint64 to int64. Precision may be lost.[0m[0m[0m
+              
+              
+              Iterations:                                                                                0/5 [00:00<?, ?it/s]
+              
+              Packets:                                                                                   0/5 [00:00<?, ?it/s][A
+              
+              Packets:                                                                                   0/5 [00:00<?, ?it/s][A
+              
+              Packets:   ████████████████████████████████████████████████████████████████████████████████5/5 [00:00<00:00, 1155.65it/s][A
+
+[33.33%] ··· ...blyBase.time_setup_analytical_approximations           14.7±0μs
+[33.33%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
+[41.67%] ··· ...semblyBase.time_setup_continuum_interactions            352±0μs
+[41.67%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
+[50.00%] ··· ...asmaAssemblyBase.time_setup_helium_treatment           16.9±0μs
+[50.00%] ···· Number of density points larger than number of shells. Assuming inner point irrelevant
