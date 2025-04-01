@@ -21,6 +21,11 @@ from tardis.transport.montecarlo.estimators import radfield_mc_estimators
 from tardis.transport.montecarlo.numba_interface import opacity_state_initialize
 from tardis.transport.montecarlo.packet_collections import VPacketCollection
 from tardis.plasma.assembly.legacy_assembly import assemble_plasma
+from tardis.model.base import SimulationState
+from tardis.plasma.equilibrium.rates import (
+    RadiativeRatesSolver,
+    ThermalCollisionalRateSolver,
+)
 
 
 class BenchmarkBase:
@@ -80,7 +85,7 @@ class BenchmarkBase:
     @functools.cached_property
     def atomic_data_fname(self):
         atomic_data_fname = (
-            f"{self.tardis_ref_path}/kurucz_cd23_chianti_H_He.h5"
+            "/home/charon/Downloads/tardis-data/kurucz_cd23_chianti_H_He.h5"
         )
 
         if not Path(atomic_data_fname).exists():
@@ -277,3 +282,48 @@ class BenchmarkBase:
             atom_data=self.atomic_dataset,
         )
         
+    @functools.cached_property
+    def collisional_simulation_state(self):
+        config = Configuration.from_yaml(
+            "/home/charon/coding/open-source/tardis/tardis/plasma/tests/data/plasma_base_test_config.yml"
+        )
+        return SimulationState.from_config(
+            config, atom_data=self.atomic_dataset
+        )
+    
+
+    @functools.cached_property
+    def radiative_transitions(self):
+        param = (14, 0, slice(None), slice(None)) 
+        return self.atomic_dataset.lines.loc[param, :]
+
+
+    @functools.cached_property
+    def radiative_rate_solver(self):
+        return RadiativeRatesSolver(self.radiative_transitions)
+
+
+    @functools.cached_property
+    def collisional_rate_solver(self):
+        param = (14, 0, slice(None), slice(None)) 
+        col_strength_temperatures = (
+            self.atomic_dataset.collision_data_temperatures
+        )
+        col_strengths = self.atomic_dataset.collision_data.loc[
+            param, :
+        ]
+        return ThermalCollisionalRateSolver(
+            self.atomic_dataset.levels,
+            self.radiative_transitions,
+            col_strength_temperatures,
+            col_strengths,
+            "chianti",
+        )
+
+    @functools.cached_property
+    def rate_solver_list(self):
+        return [
+            (self.radiative_rate_solver, "radiative"),
+            (self.collisional_rate_solver, "electron"),
+        ]
+
